@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Superstore — Profit by U.S. State (2019–2022)</title>
+<style>
+:root {--ink:#20363b;--muted:#657780;--teal:#0d6f5b;--red:#b64640;--bg:#f8faf9;--line:#e4eae8;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+.main{max-width:1260px;margin:0 auto;padding:34px 30px 24px}
+h1{font-size:clamp(25px,2.7vw,37px);font-weight:800;letter-spacing:-.7px;margin:0 0 8px;line-height:1.17}
+.subtitle{font-size:16px;line-height:1.4;color:#5b6c73;margin:0 0 21px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:0 0 18px}
+.stat{background:white;border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+.stat .lbl{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.stat .val{font-size:clamp(19px,2.1vw,27px);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.25px}
+.stat .sub{font-size:11px;color:var(--muted);margin-top:5px}
+.content{display:grid;grid-template-columns:minmax(0,1fr) 265px;gap:16px;align-items:start}
+.map-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px;min-width:0}
+.maphead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 8px}
+.maphead h2{font-size:16px;margin:0;font-weight:750}
+.maphead input{width:190px;border:1px solid #cad8d3;border-radius:8px;padding:9px 11px;font-size:13px;color:#20363b;background:white}
+svg{display:block;width:100%;height:auto;max-height:620px}
+.tile{cursor:pointer;outline:none;transition:opacity .12s ease}
+.tile rect{stroke:#fff;stroke-width:1.2;transition:stroke .1s,stroke-width .1s}
+.tile:hover rect,.tile.active rect,.tile:focus-visible rect{stroke:#102c35;stroke-width:3}
+.tile.faded{opacity:.18}
+.tile text{pointer-events:none;font-family:Segoe UI,Arial,sans-serif}
+.state-code{font-size:17px;font-weight:800}
+.state-num{font-size:10.8px;font-weight:650}
+.missing{cursor:default}
+.missing rect{fill:#e9efed;stroke:#fff}
+.missing text{fill:#96a6a5}
+.legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 2px 10px;font-size:12px;color:#607078}
+.legendbar{background:linear-gradient(90deg,#b64640 0%,#e3a19a 24%,#f6f6f2 50%,#9bc8ba 75%,#0d6f5b 100%);width:190px;height:12px;border-radius:5px;border:1px solid #e6e8e8}
+.explain{font-size:11.5px;line-height:1.5;color:#64747a;margin:0 2px}
+.side{display:grid;gap:13px}
+.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+.panel h3{font-size:14px;font-weight:800;margin:0 0 12px}
+.selected-name{font-size:23px;font-weight:800;margin:0 0 2px}
+.selected-tag{font-size:12px;color:#66757b;margin:0 0 10px}
+.bigprofit{font-size:28px;font-weight:800;margin:6px 0 9px;font-variant-numeric:tabular-nums}
+.prof{color:var(--teal)}.loss{color:var(--red)}
+.detail{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #edf1f0;font-size:12px}
+.detail span{color:#66757b}.detail b{font-variant-numeric:tabular-nums;text-align:right}
+.rankline{display:flex;justify-content:space-between;gap:8px;font-size:12px;border-top:1px solid #edf1f0;padding:7px 0}
+.rankline strong{font-variant-numeric:tabular-nums}
+.foot{font-size:11px;line-height:1.6;color:#69797d;padding:17px 2px 0;}
+@media(max-width:850px){.content{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.main{padding:22px 12px}.stats{gap:7px}.stat{padding:11px 9px}.stat .val{font-size:20px}.map-panel{padding:12px 6px}.maphead{padding:0 7px;flex-wrap:wrap}.side{grid-template-columns:1fr}.maphead input{width:100%}}
+@media(prefers-reduced-motion:reduce){.tile,.tile rect{transition:none}}
+</style>
+</head><body><main class="main">
+<header><h1>Where Superstore Earned—and Lost—Money</h1><p class="subtitle">Total profit by U.S. state · Orders placed 2019–2022 · Tableau Cloud data</p></header>
+<section class="stats" aria-label="United States summary">
+<div class="stat"><div class="lbl">U.S. net profit</div><div class="val">286,397</div><div class="sub">Total, 2019–2022</div></div>
+<div class="stat"><div class="lbl">U.S. sales</div><div class="val">2,297,201</div><div class="sub">All U.S. transaction lines</div></div>
+<div class="stat"><div class="lbl">Profit-to-sales ratio</div><div class="val">12.47%</div><div class="sub">SUM(Profit) / SUM(Sales)</div></div>
+<div class="stat"><div class="lbl">States with losses</div><div class="val">10 <small style="font-size:13px;font-weight:500;color:#677b80">of 48</small></div><div class="sub">Excludes D.C. (profitable)</div></div>
+</section>
+<div class="content">
+<section class="map-panel" aria-label="United States state profit map">
+<div class="maphead"><h2>State profit — schematic tile map</h2><input id="find" type="search" aria-label="Find state" placeholder="Find a state…" autocomplete="off"/></div>
+<svg viewBox="0 0 796 490" xmlns="http://www.w3.org/2000/svg" aria-label="Schematic U.S. state tile grid, colored by profit or loss" role="img">
+<text x="27" y="27" font-size="13" fill="#74848a" font-family="Segoe UI,Arial,sans-serif">West</text>
+<text x="703" y="27" font-size="13" fill="#74848a" font-family="Segoe UI,Arial,sans-serif">East</text>
+<g class="tile" role="button" tabindex="0" aria-label="Washington: profit +33,402.65; sales 138,641.27; profit ratio 24.09%; order lines 506" data-code="WA" data-state="Washington" data-profit="33402.6517" data-sales="138641.2700" data-rows="506">
+<title>Washington: profit +33,402.65; sales 138,641.27; profit ratio 24.09%; order lines 506</title>
+<rect x="93" y="48" width="64" height="64" rx="8" fill="#378776" />
+<text x="125.0" y="75" fill="#ffffff" class="state-code" text-anchor="middle">WA</text>
+<text x="125.0" y="94" fill="#ffffff" class="state-num" text-anchor="middle">+33.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Montana: profit +1,833.33; sales 5,589.35; profit ratio 32.80%; order lines 15" data-code="MT" data-state="Montana" data-profit="1833.3285" data-sales="5589.3520" data-rows="15">
+<title>Montana: profit +1,833.33; sales 5,589.35; profit ratio 32.80%; order lines 15</title>
+<rect x="162" y="48" width="64" height="64" rx="8" fill="#b4d0c8" />
+<text x="194.0" y="75" fill="#173139" class="state-code" text-anchor="middle">MT</text>
+<text x="194.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+1.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="North Dakota: profit +230.15; sales 919.91; profit ratio 25.02%; order lines 7" data-code="ND" data-state="North Dakota" data-profit="230.1497" data-sales="919.9100" data-rows="7">
+<title>North Dakota: profit +230.15; sales 919.91; profit ratio 25.02%; order lines 7</title>
+<rect x="231" y="48" width="64" height="64" rx="8" fill="#cbddd6" />
+<text x="263.0" y="75" fill="#173139" class="state-code" text-anchor="middle">ND</text>
+<text x="263.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+230</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Minnesota: profit +10,823.19; sales 29,863.15; profit ratio 36.24%; order lines 89" data-code="MN" data-state="Minnesota" data-profit="10823.1874" data-sales="29863.1500" data-rows="89">
+<title>Minnesota: profit +10,823.19; sales 29,863.15; profit ratio 36.24%; order lines 89</title>
+<rect x="300" y="48" width="64" height="64" rx="8" fill="#70a89b" />
+<text x="332.0" y="75" fill="#173139" class="state-code" text-anchor="middle">MN</text>
+<text x="332.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+10.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Wisconsin: profit +8,401.80; sales 32,114.61; profit ratio 26.16%; order lines 110" data-code="WI" data-state="Wisconsin" data-profit="8401.8004" data-sales="32114.6100" data-rows="110">
+<title>Wisconsin: profit +8,401.80; sales 32,114.61; profit ratio 26.16%; order lines 110</title>
+<rect x="369" y="48" width="64" height="64" rx="8" fill="#7cb0a3" />
+<text x="401.0" y="75" fill="#173139" class="state-code" text-anchor="middle">WI</text>
+<text x="401.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+8.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Michigan: profit +24,463.19; sales 76,269.61; profit ratio 32.07%; order lines 255" data-code="MI" data-state="Michigan" data-profit="24463.1876" data-sales="76269.6140" data-rows="255">
+<title>Michigan: profit +24,463.19; sales 76,269.61; profit ratio 32.07%; order lines 255</title>
+<rect x="438" y="48" width="64" height="64" rx="8" fill="#479180" />
+<text x="470.0" y="75" fill="#ffffff" class="state-code" text-anchor="middle">MI</text>
+<text x="470.0" y="94" fill="#ffffff" class="state-num" text-anchor="middle">+24.5k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Vermont: profit +2,244.98; sales 8,929.37; profit ratio 25.14%; order lines 11" data-code="VT" data-state="Vermont" data-profit="2244.9783" data-sales="8929.3700" data-rows="11">
+<title>Vermont: profit +2,244.98; sales 8,929.37; profit ratio 25.14%; order lines 11</title>
+<rect x="645" y="48" width="64" height="64" rx="8" fill="#afcdc4" />
+<text x="677.0" y="75" fill="#173139" class="state-code" text-anchor="middle">VT</text>
+<text x="677.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+2.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Maine: profit +454.49; sales 1,270.53; profit ratio 35.77%; order lines 8" data-code="ME" data-state="Maine" data-profit="454.4862" data-sales="1270.5300" data-rows="8">
+<title>Maine: profit +454.49; sales 1,270.53; profit ratio 35.77%; order lines 8</title>
+<rect x="714" y="48" width="64" height="64" rx="8" fill="#c7dbd4" />
+<text x="746.0" y="75" fill="#173139" class="state-code" text-anchor="middle">ME</text>
+<text x="746.0" y="94" fill="#173139" class="state-num" text-anchor="middle">+454</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Oregon: profit -1,190.47; sales 17,431.15; profit ratio -6.83%; order lines 124" data-code="OR" data-state="Oregon" data-profit="-1190.4705" data-sales="17431.1500" data-rows="124">
+<title>Oregon: profit -1,190.47; sales 17,431.15; profit ratio -6.83%; order lines 124</title>
+<rect x="93" y="118" width="64" height="64" rx="8" fill="#e4c6c1" />
+<text x="125.0" y="145" fill="#173139" class="state-code" text-anchor="middle">OR</text>
+<text x="125.0" y="164" fill="#173139" class="state-num" text-anchor="middle">-1.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Idaho: profit +826.72; sales 4,382.49; profit ratio 18.86%; order lines 21" data-code="ID" data-state="Idaho" data-profit="826.7231" data-sales="4382.4860" data-rows="21">
+<title>Idaho: profit +826.72; sales 4,382.49; profit ratio 18.86%; order lines 21</title>
+<rect x="162" y="118" width="64" height="64" rx="8" fill="#c2d8d0" />
+<text x="194.0" y="145" fill="#173139" class="state-code" text-anchor="middle">ID</text>
+<text x="194.0" y="164" fill="#173139" class="state-num" text-anchor="middle">+827</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="South Dakota: profit +394.83; sales 1,315.56; profit ratio 30.01%; order lines 12" data-code="SD" data-state="South Dakota" data-profit="394.8283" data-sales="1315.5600" data-rows="12">
+<title>South Dakota: profit +394.83; sales 1,315.56; profit ratio 30.01%; order lines 12</title>
+<rect x="231" y="118" width="64" height="64" rx="8" fill="#c8dbd4" />
+<text x="263.0" y="145" fill="#173139" class="state-code" text-anchor="middle">SD</text>
+<text x="263.0" y="164" fill="#173139" class="state-num" text-anchor="middle">+395</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Iowa: profit +1,183.81; sales 4,579.76; profit ratio 25.85%; order lines 30" data-code="IA" data-state="Iowa" data-profit="1183.8119" data-sales="4579.7600" data-rows="30">
+<title>Iowa: profit +1,183.81; sales 4,579.76; profit ratio 25.85%; order lines 30</title>
+<rect x="300" y="118" width="64" height="64" rx="8" fill="#bdd5cd" />
+<text x="332.0" y="145" fill="#173139" class="state-code" text-anchor="middle">IA</text>
+<text x="332.0" y="164" fill="#173139" class="state-num" text-anchor="middle">+1.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Illinois: profit -12,607.89; sales 80,166.10; profit ratio -15.73%; order lines 492" data-code="IL" data-state="Illinois" data-profit="-12607.8870" data-sales="80166.1010" data-rows="492">
+<title>Illinois: profit -12,607.89; sales 80,166.10; profit ratio -15.73%; order lines 492</title>
+<rect x="369" y="118" width="64" height="64" rx="8" fill="#c46c67" />
+<text x="401.0" y="145" fill="#ffffff" class="state-code" text-anchor="middle">IL</text>
+<text x="401.0" y="164" fill="#ffffff" class="state-num" text-anchor="middle">-12.6k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Indiana: profit +18,382.94; sales 53,555.36; profit ratio 34.33%; order lines 149" data-code="IN" data-state="Indiana" data-profit="18382.9363" data-sales="53555.3600" data-rows="149">
+<title>Indiana: profit +18,382.94; sales 53,555.36; profit ratio 34.33%; order lines 149</title>
+<rect x="438" y="118" width="64" height="64" rx="8" fill="#55998a" />
+<text x="470.0" y="145" fill="#173139" class="state-code" text-anchor="middle">IN</text>
+<text x="470.0" y="164" fill="#173139" class="state-num" text-anchor="middle">+18.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Ohio: profit -16,971.38; sales 78,258.14; profit ratio -21.69%; order lines 469" data-code="OH" data-state="Ohio" data-profit="-16971.3766" data-sales="78258.1360" data-rows="469">
+<title>Ohio: profit -16,971.38; sales 78,258.14; profit ratio -21.69%; order lines 469</title>
+<rect x="507" y="118" width="64" height="64" rx="8" fill="#be5c57" />
+<text x="539.0" y="145" fill="#ffffff" class="state-code" text-anchor="middle">OH</text>
+<text x="539.0" y="164" fill="#ffffff" class="state-num" text-anchor="middle">-17.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Pennsylvania: profit -15,559.96; sales 116,511.91; profit ratio -13.35%; order lines 587" data-code="PA" data-state="Pennsylvania" data-profit="-15559.9603" data-sales="116511.9140" data-rows="587">
+<title>Pennsylvania: profit -15,559.96; sales 116,511.91; profit ratio -13.35%; order lines 587</title>
+<rect x="576" y="118" width="64" height="64" rx="8" fill="#c0615b" />
+<text x="608.0" y="145" fill="#ffffff" class="state-code" text-anchor="middle">PA</text>
+<text x="608.0" y="164" fill="#ffffff" class="state-num" text-anchor="middle">-15.6k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="New York: profit +74,038.55; sales 310,876.27; profit ratio 23.82%; order lines 1,128" data-code="NY" data-state="New York" data-profit="74038.5486" data-sales="310876.2710" data-rows="1128">
+<title>New York: profit +74,038.55; sales 310,876.27; profit ratio 23.82%; order lines 1,128</title>
+<rect x="645" y="118" width="64" height="64" rx="8" fill="#0f705c" />
+<text x="677.0" y="145" fill="#ffffff" class="state-code" text-anchor="middle">NY</text>
+<text x="677.0" y="164" fill="#ffffff" class="state-num" text-anchor="middle">+74.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="New Hampshire: profit +1,706.50; sales 7,292.52; profit ratio 23.40%; order lines 27" data-code="NH" data-state="New Hampshire" data-profit="1706.5028" data-sales="7292.5240" data-rows="27">
+<title>New Hampshire: profit +1,706.50; sales 7,292.52; profit ratio 23.40%; order lines 27</title>
+<rect x="714" y="118" width="64" height="64" rx="8" fill="#b6d1c9" />
+<text x="746.0" y="145" fill="#173139" class="state-code" text-anchor="middle">NH</text>
+<text x="746.0" y="164" fill="#173139" class="state-num" text-anchor="middle">+1.7k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="California: profit +76,381.39; sales 457,687.63; profit ratio 16.69%; order lines 2,001" data-code="CA" data-state="California" data-profit="76381.3871" data-sales="457687.6315" data-rows="2001">
+<title>California: profit +76,381.39; sales 457,687.63; profit ratio 16.69%; order lines 2,001</title>
+<rect x="24" y="188" width="64" height="64" rx="8" fill="#0d6f5b" />
+<text x="56.0" y="215" fill="#ffffff" class="state-code" text-anchor="middle">CA</text>
+<text x="56.0" y="234" fill="#ffffff" class="state-num" text-anchor="middle">+76.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Nevada: profit +3,316.77; sales 16,729.10; profit ratio 19.83%; order lines 39" data-code="NV" data-state="Nevada" data-profit="3316.7659" data-sales="16729.1020" data-rows="39">
+<title>Nevada: profit +3,316.77; sales 16,729.10; profit ratio 19.83%; order lines 39</title>
+<rect x="93" y="188" width="64" height="64" rx="8" fill="#a3c6bd" />
+<text x="125.0" y="215" fill="#173139" class="state-code" text-anchor="middle">NV</text>
+<text x="125.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+3.3k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Wyoming: profit +100.20; sales 1,603.14; profit ratio 6.25%; order lines 1" data-code="WY" data-state="Wyoming" data-profit="100.1960" data-sales="1603.1360" data-rows="1">
+<title>Wyoming: profit +100.20; sales 1,603.14; profit ratio 6.25%; order lines 1</title>
+<rect x="162" y="188" width="64" height="64" rx="8" fill="#cdded7" />
+<text x="194.0" y="215" fill="#173139" class="state-code" text-anchor="middle">WY</text>
+<text x="194.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+100</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Nebraska: profit +2,037.09; sales 7,464.93; profit ratio 27.29%; order lines 38" data-code="NE" data-state="Nebraska" data-profit="2037.0942" data-sales="7464.9300" data-rows="38">
+<title>Nebraska: profit +2,037.09; sales 7,464.93; profit ratio 27.29%; order lines 38</title>
+<rect x="231" y="188" width="64" height="64" rx="8" fill="#b2cfc6" />
+<text x="263.0" y="215" fill="#173139" class="state-code" text-anchor="middle">NE</text>
+<text x="263.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+2.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Missouri: profit +6,436.21; sales 22,205.15; profit ratio 28.99%; order lines 66" data-code="MO" data-state="Missouri" data-profit="6436.2105" data-sales="22205.1500" data-rows="66">
+<title>Missouri: profit +6,436.21; sales 22,205.15; profit ratio 28.99%; order lines 66</title>
+<rect x="300" y="188" width="64" height="64" rx="8" fill="#89b7ab" />
+<text x="332.0" y="215" fill="#173139" class="state-code" text-anchor="middle">MO</text>
+<text x="332.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+6.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Kentucky: profit +11,199.70; sales 36,591.75; profit ratio 30.61%; order lines 139" data-code="KY" data-state="Kentucky" data-profit="11199.6966" data-sales="36591.7500" data-rows="139">
+<title>Kentucky: profit +11,199.70; sales 36,591.75; profit ratio 30.61%; order lines 139</title>
+<rect x="369" y="188" width="64" height="64" rx="8" fill="#6ea79a" />
+<text x="401.0" y="215" fill="#173139" class="state-code" text-anchor="middle">KY</text>
+<text x="401.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+11.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="West Virginia: profit +185.92; sales 1,209.82; profit ratio 15.37%; order lines 4" data-code="WV" data-state="West Virginia" data-profit="185.9216" data-sales="1209.8240" data-rows="4">
+<title>West Virginia: profit +185.92; sales 1,209.82; profit ratio 15.37%; order lines 4</title>
+<rect x="438" y="188" width="64" height="64" rx="8" fill="#cbddd6" />
+<text x="470.0" y="215" fill="#173139" class="state-code" text-anchor="middle">WV</text>
+<text x="470.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+186</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Virginia: profit +18,597.95; sales 70,636.72; profit ratio 26.33%; order lines 224" data-code="VA" data-state="Virginia" data-profit="18597.9504" data-sales="70636.7200" data-rows="224">
+<title>Virginia: profit +18,597.95; sales 70,636.72; profit ratio 26.33%; order lines 224</title>
+<rect x="507" y="188" width="64" height="64" rx="8" fill="#55998a" />
+<text x="539.0" y="215" fill="#173139" class="state-code" text-anchor="middle">VA</text>
+<text x="539.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+18.6k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Maryland: profit +7,031.18; sales 23,705.52; profit ratio 29.66%; order lines 105" data-code="MD" data-state="Maryland" data-profit="7031.1788" data-sales="23705.5230" data-rows="105">
+<title>Maryland: profit +7,031.18; sales 23,705.52; profit ratio 29.66%; order lines 105</title>
+<rect x="576" y="188" width="64" height="64" rx="8" fill="#85b4a9" />
+<text x="608.0" y="215" fill="#173139" class="state-code" text-anchor="middle">MD</text>
+<text x="608.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+7.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="New Jersey: profit +9,772.91; sales 35,764.31; profit ratio 27.33%; order lines 130" data-code="NJ" data-state="New Jersey" data-profit="9772.9138" data-sales="35764.3120" data-rows="130">
+<title>New Jersey: profit +9,772.91; sales 35,764.31; profit ratio 27.33%; order lines 130</title>
+<rect x="645" y="188" width="64" height="64" rx="8" fill="#75ab9e" />
+<text x="677.0" y="215" fill="#173139" class="state-code" text-anchor="middle">NJ</text>
+<text x="677.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+9.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Massachusetts: profit +6,785.50; sales 28,634.43; profit ratio 23.70%; order lines 135" data-code="MA" data-state="Massachusetts" data-profit="6785.5016" data-sales="28634.4330" data-rows="135">
+<title>Massachusetts: profit +6,785.50; sales 28,634.43; profit ratio 23.70%; order lines 135</title>
+<rect x="714" y="188" width="64" height="64" rx="8" fill="#86b5aa" />
+<text x="746.0" y="215" fill="#173139" class="state-code" text-anchor="middle">MA</text>
+<text x="746.0" y="234" fill="#173139" class="state-num" text-anchor="middle">+6.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Utah: profit +2,546.53; sales 11,220.06; profit ratio 22.70%; order lines 53" data-code="UT" data-state="Utah" data-profit="2546.5335" data-sales="11220.0560" data-rows="53">
+<title>Utah: profit +2,546.53; sales 11,220.06; profit ratio 22.70%; order lines 53</title>
+<rect x="93" y="258" width="64" height="64" rx="8" fill="#accbc2" />
+<text x="125.0" y="285" fill="#173139" class="state-code" text-anchor="middle">UT</text>
+<text x="125.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+2.5k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Colorado: profit -6,527.86; sales 32,108.12; profit ratio -20.33%; order lines 182" data-code="CO" data-state="Colorado" data-profit="-6527.8579" data-sales="32108.1180" data-rows="182">
+<title>Colorado: profit -6,527.86; sales 32,108.12; profit ratio -20.33%; order lines 182</title>
+<rect x="162" y="258" width="64" height="64" rx="8" fill="#d08e89" />
+<text x="194.0" y="285" fill="#173139" class="state-code" text-anchor="middle">CO</text>
+<text x="194.0" y="304" fill="#173139" class="state-num" text-anchor="middle">-6.5k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Kansas: profit +836.44; sales 2,914.31; profit ratio 28.70%; order lines 24" data-code="KS" data-state="Kansas" data-profit="836.4435" data-sales="2914.3100" data-rows="24">
+<title>Kansas: profit +836.44; sales 2,914.31; profit ratio 28.70%; order lines 24</title>
+<rect x="231" y="258" width="64" height="64" rx="8" fill="#c2d8d0" />
+<text x="263.0" y="285" fill="#173139" class="state-code" text-anchor="middle">KS</text>
+<text x="263.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+836</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Arkansas: profit +4,008.69; sales 11,678.13; profit ratio 34.33%; order lines 60" data-code="AR" data-state="Arkansas" data-profit="4008.6871" data-sales="11678.1300" data-rows="60">
+<title>Arkansas: profit +4,008.69; sales 11,678.13; profit ratio 34.33%; order lines 60</title>
+<rect x="300" y="258" width="64" height="64" rx="8" fill="#9dc2b8" />
+<text x="332.0" y="285" fill="#173139" class="state-code" text-anchor="middle">AR</text>
+<text x="332.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+4.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Tennessee: profit -5,341.69; sales 30,661.87; profit ratio -17.42%; order lines 183" data-code="TN" data-state="Tennessee" data-profit="-5341.6936" data-sales="30661.8720" data-rows="183">
+<title>Tennessee: profit -5,341.69; sales 30,661.87; profit ratio -17.42%; order lines 183</title>
+<rect x="369" y="258" width="64" height="64" rx="8" fill="#d39792" />
+<text x="401.0" y="285" fill="#173139" class="state-code" text-anchor="middle">TN</text>
+<text x="401.0" y="304" fill="#173139" class="state-num" text-anchor="middle">-5.3k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="North Carolina: profit -7,490.91; sales 55,603.16; profit ratio -13.47%; order lines 249" data-code="NC" data-state="North Carolina" data-profit="-7490.9122" data-sales="55603.1640" data-rows="249">
+<title>North Carolina: profit -7,490.91; sales 55,603.16; profit ratio -13.47%; order lines 249</title>
+<rect x="438" y="258" width="64" height="64" rx="8" fill="#ce8782" />
+<text x="470.0" y="285" fill="#173139" class="state-code" text-anchor="middle">NC</text>
+<text x="470.0" y="304" fill="#173139" class="state-num" text-anchor="middle">-7.5k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="South Carolina: profit +1,769.06; sales 8,481.71; profit ratio 20.86%; order lines 42" data-code="SC" data-state="South Carolina" data-profit="1769.0566" data-sales="8481.7100" data-rows="42">
+<title>South Carolina: profit +1,769.06; sales 8,481.71; profit ratio 20.86%; order lines 42</title>
+<rect x="507" y="258" width="64" height="64" rx="8" fill="#b5d1c8" />
+<text x="539.0" y="285" fill="#173139" class="state-code" text-anchor="middle">SC</text>
+<text x="539.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+1.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Delaware: profit +9,977.37; sales 27,451.07; profit ratio 36.35%; order lines 96" data-code="DE" data-state="Delaware" data-profit="9977.3748" data-sales="27451.0690" data-rows="96">
+<title>Delaware: profit +9,977.37; sales 27,451.07; profit ratio 36.35%; order lines 96</title>
+<rect x="576" y="258" width="64" height="64" rx="8" fill="#74ab9e" />
+<text x="608.0" y="285" fill="#173139" class="state-code" text-anchor="middle">DE</text>
+<text x="608.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+10.0k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Connecticut: profit +3,511.49; sales 13,384.36; profit ratio 26.24%; order lines 82" data-code="CT" data-state="Connecticut" data-profit="3511.4918" data-sales="13384.3570" data-rows="82">
+<title>Connecticut: profit +3,511.49; sales 13,384.36; profit ratio 26.24%; order lines 82</title>
+<rect x="645" y="258" width="64" height="64" rx="8" fill="#a1c5bb" />
+<text x="677.0" y="285" fill="#173139" class="state-code" text-anchor="middle">CT</text>
+<text x="677.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+3.5k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Rhode Island: profit +7,285.63; sales 22,627.96; profit ratio 32.20%; order lines 56" data-code="RI" data-state="Rhode Island" data-profit="7285.6293" data-sales="22627.9560" data-rows="56">
+<title>Rhode Island: profit +7,285.63; sales 22,627.96; profit ratio 32.20%; order lines 56</title>
+<rect x="714" y="258" width="64" height="64" rx="8" fill="#83b3a8" />
+<text x="746.0" y="285" fill="#173139" class="state-code" text-anchor="middle">RI</text>
+<text x="746.0" y="304" fill="#173139" class="state-num" text-anchor="middle">+7.3k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Arizona: profit -3,427.92; sales 35,282.00; profit ratio -9.72%; order lines 224" data-code="AZ" data-state="Arizona" data-profit="-3427.9246" data-sales="35282.0010" data-rows="224">
+<title>Arizona: profit -3,427.92; sales 35,282.00; profit ratio -9.72%; order lines 224</title>
+<rect x="93" y="328" width="64" height="64" rx="8" fill="#daa9a5" />
+<text x="125.0" y="355" fill="#173139" class="state-code" text-anchor="middle">AZ</text>
+<text x="125.0" y="374" fill="#173139" class="state-num" text-anchor="middle">-3.4k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="New Mexico: profit +1,157.12; sales 4,783.52; profit ratio 24.19%; order lines 37" data-code="NM" data-state="New Mexico" data-profit="1157.1161" data-sales="4783.5220" data-rows="37">
+<title>New Mexico: profit +1,157.12; sales 4,783.52; profit ratio 24.19%; order lines 37</title>
+<rect x="162" y="328" width="64" height="64" rx="8" fill="#bdd5cd" />
+<text x="194.0" y="355" fill="#173139" class="state-code" text-anchor="middle">NM</text>
+<text x="194.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+1.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Oklahoma: profit +4,853.96; sales 19,683.39; profit ratio 24.66%; order lines 66" data-code="OK" data-state="Oklahoma" data-profit="4853.9560" data-sales="19683.3890" data-rows="66">
+<title>Oklahoma: profit +4,853.96; sales 19,683.39; profit ratio 24.66%; order lines 66</title>
+<rect x="231" y="328" width="64" height="64" rx="8" fill="#95beb3" />
+<text x="263.0" y="355" fill="#173139" class="state-code" text-anchor="middle">OK</text>
+<text x="263.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+4.9k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Louisiana: profit +2,196.10; sales 9,217.03; profit ratio 23.83%; order lines 42" data-code="LA" data-state="Louisiana" data-profit="2196.1023" data-sales="9217.0300" data-rows="42">
+<title>Louisiana: profit +2,196.10; sales 9,217.03; profit ratio 23.83%; order lines 42</title>
+<rect x="300" y="328" width="64" height="64" rx="8" fill="#b0cdc5" />
+<text x="332.0" y="355" fill="#173139" class="state-code" text-anchor="middle">LA</text>
+<text x="332.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+2.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Mississippi: profit +3,172.98; sales 10,771.34; profit ratio 29.46%; order lines 53" data-code="MS" data-state="Mississippi" data-profit="3172.9762" data-sales="10771.3400" data-rows="53">
+<title>Mississippi: profit +3,172.98; sales 10,771.34; profit ratio 29.46%; order lines 53</title>
+<rect x="369" y="328" width="64" height="64" rx="8" fill="#a5c7bd" />
+<text x="401.0" y="355" fill="#173139" class="state-code" text-anchor="middle">MS</text>
+<text x="401.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+3.2k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Alabama: profit +5,786.83; sales 19,510.64; profit ratio 29.66%; order lines 61" data-code="AL" data-state="Alabama" data-profit="5786.8253" data-sales="19510.6400" data-rows="61">
+<title>Alabama: profit +5,786.83; sales 19,510.64; profit ratio 29.66%; order lines 61</title>
+<rect x="438" y="328" width="64" height="64" rx="8" fill="#8db9ae" />
+<text x="470.0" y="355" fill="#173139" class="state-code" text-anchor="middle">AL</text>
+<text x="470.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+5.8k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Georgia: profit +16,250.04; sales 49,095.84; profit ratio 33.10%; order lines 184" data-code="GA" data-state="Georgia" data-profit="16250.0433" data-sales="49095.8400" data-rows="184">
+<title>Georgia: profit +16,250.04; sales 49,095.84; profit ratio 33.10%; order lines 184</title>
+<rect x="507" y="328" width="64" height="64" rx="8" fill="#5c9d8e" />
+<text x="539.0" y="355" fill="#173139" class="state-code" text-anchor="middle">GA</text>
+<text x="539.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+16.3k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="District of Columbia: profit +1,059.59; sales 2,865.02; profit ratio 36.98%; order lines 10" data-code="DC" data-state="District of Columbia" data-profit="1059.5893" data-sales="2865.0200" data-rows="10">
+<title>District of Columbia: profit +1,059.59; sales 2,865.02; profit ratio 36.98%; order lines 10</title>
+<rect x="576" y="328" width="64" height="64" rx="8" fill="#bfd6ce" />
+<text x="608.0" y="355" fill="#173139" class="state-code" text-anchor="middle">DC</text>
+<text x="608.0" y="374" fill="#173139" class="state-num" text-anchor="middle">+1.1k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Texas: profit -25,729.36; sales 170,188.05; profit ratio -15.12%; order lines 985" data-code="TX" data-state="Texas" data-profit="-25729.3563" data-sales="170188.0458" data-rows="985">
+<title>Texas: profit -25,729.36; sales 170,188.05; profit ratio -15.12%; order lines 985</title>
+<rect x="231" y="398" width="64" height="64" rx="8" fill="#b64640" />
+<text x="263.0" y="425" fill="#ffffff" class="state-code" text-anchor="middle">TX</text>
+<text x="263.0" y="444" fill="#ffffff" class="state-num" text-anchor="middle">-25.7k</text>
+</g><g class="tile" role="button" tabindex="0" aria-label="Florida: profit -3,399.30; sales 89,473.71; profit ratio -3.80%; order lines 383" data-code="FL" data-state="Florida" data-profit="-3399.3017" data-sales="89473.7080" data-rows="383">
+<title>Florida: profit -3,399.30; sales 89,473.71; profit ratio -3.80%; order lines 383</title>
+<rect x="576" y="398" width="64" height="64" rx="8" fill="#daaaa5" />
+<text x="608.0" y="425" fill="#173139" class="state-code" text-anchor="middle">FL</text>
+<text x="608.0" y="444" fill="#173139" class="state-num" text-anchor="middle">-3.4k</text>
+</g><g class="tile missing" aria-label="Alaska: No records" role="img"><title>Alaska: No records in dataset</title><rect x="25" y="398" width="64" height="64" rx="8"/><text x="57" y="425" class="state-code" text-anchor="middle">AK</text><text x="57" y="444" class="state-num" text-anchor="middle">No data</text></g><g class="tile missing" aria-label="Hawaii: No records" role="img"><title>Hawaii: No records in dataset</title><rect x="94" y="398" width="64" height="64" rx="8"/><text x="126" y="425" class="state-code" text-anchor="middle">HI</text><text x="126" y="444" class="state-num" text-anchor="middle">No data</text></g>
+</svg>
+<div class="legend"><strong style="color:#50626a">Profit scale</strong><span>Loss</span><span class="legendbar" aria-hidden="true"></span><span>Gain</span></div>
+<p class="explain">Tiles show state-level totals, with deeper red for larger losses and deeper teal for larger profits. The color intensity uses a non-linear scale. Tile positions are schematic, not to geographic scale. Select a state for details. Gray = no records.</p>
+</section>
+<aside class="side">
+<section class="panel" aria-live="polite"><h3>Selected state</h3><div id="name" class="selected-name">California</div><div id="status" class="selected-tag">State-level aggregate</div><div id="mainprofit" class="bigprofit prof">+76,381.39</div><div class="detail"><span>Sales</span><b id="sales">457,687.63</b></div><div class="detail"><span>Profit ratio</span><b id="margin">16.69%</b></div><div class="detail"><span>Transaction lines</span><b id="rows">2,001</b></div></section>
+<section class="panel"><h3>Highest profits</h3><div class="rankline"><span>California</span><strong class="prof">+76.4k</strong></div><div class="rankline"><span>New York</span><strong class="prof">+74.0k</strong></div><div class="rankline"><span>Washington</span><strong class="prof">+33.4k</strong></div></section>
+<section class="panel"><h3>Largest losses</h3><div class="rankline"><span>Texas</span><strong class="loss">-25.7k</strong></div><div class="rankline"><span>Ohio</span><strong class="loss">-17.0k</strong></div><div class="rankline"><span>Pennsylvania</span><strong class="loss">-15.6k</strong></div></section>
+</aside>
+</div>
+<footer class="foot">Source: published Tableau Cloud <strong>Superstore</strong> data source, owner Zak Geis; read-only aggregate queries on November 4, 2026. Covers the contiguous 48 U.S. states and Washington, D.C. Alaska and Hawaii have no records. Ten Canadian provinces are excluded. Monetary unit was not verified in the data-source metadata. This file is fully self-contained and requires no internet connection, external scripts or map tiles.</footer>
+</main>
+<script>
+(function(){
+const tiles=Array.from(document.querySelectorAll('.tile[data-code]'));
+const fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const data=Object.fromEntries(tiles.map(t=>[t.dataset.code,t]));
+const show=tile=>{
+  if(!tile)return;
+  tiles.forEach(t=>t.classList.toggle('active',t===tile));
+  const x=tile.dataset, p=Number(x.profit),s=Number(x.sales);
+  document.getElementById('name').textContent=x.state;
+  document.getElementById('mainprofit').textContent=(p<0?'-':'+')+fmt(Math.abs(p));
+  document.getElementById('mainprofit').className='bigprofit '+(p<0?'loss':'prof');
+  document.getElementById('status').textContent=p<0?'Net loss, 2019–2022':'Net gain, 2019–2022';
+  document.getElementById('sales').textContent=fmt(s);
+  document.getElementById('margin').textContent=(p/s*100).toFixed(2)+'%';
+  document.getElementById('rows').textContent=Number(x.rows).toLocaleString('en-US');
+};
+tiles.forEach(tile=>{tile.addEventListener('click',()=>show(tile));tile.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show(tile)}})});
+const find=document.getElementById('find');
+find.addEventListener('input',()=>{const q=find.value.trim().toLowerCase();let first=null;tiles.forEach(t=>{const hit=!q||t.dataset.state.toLowerCase().includes(q)||t.dataset.code.toLowerCase()===q;t.classList.toggle('faded',!hit);if(q&&hit&&!first)first=t});if(q&&first)show(first)});
+show(data.CA);
+})();
+</script>
+</body></html>
